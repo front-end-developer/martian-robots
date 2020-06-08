@@ -31,7 +31,6 @@ describe("robot", function () {
         spyOn(iRobot, 'toString');
         iRobot.instruction(instructionMock);
         const strValue = iRobot.toString();
-        console.log('STRING:', strValue);
         expect(iRobot.toString).toHaveBeenCalled();
     });
 });

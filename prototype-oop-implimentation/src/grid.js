@@ -7,10 +7,14 @@
 Compass = require('./compass');
 Robot = require('./robot');
 
+/**
+ * @param {string}  widthAndHeight      set default width and heights for the grid terrain area
+ * @constructor
+ */
 function Grid(widthAndHeight) {
     if (this.validation(widthAndHeight)) {
-        let gridDefaults = widthAndHeight.split(' ');
-        this.items = [];    // list or successful Robots added for convenience
+        const [gridWidth, gridHeight] = widthAndHeight.split(' ');
+        this.items = [];        // list or successful Robots added for convenience
         this.lostItems = [];    // list or lost Robots added for convenience
         this.compass = [
             Compass.NORTH,
@@ -21,15 +25,20 @@ function Grid(widthAndHeight) {
 
         this.bound = {
             min: {x: 0, y: 0},
-            max: {x: Number(gridDefaults[0]), y: Number(gridDefaults[1])}
+            max: {x: Number(gridWidth), y: Number(gridHeight)}
         }
         this.lastItemScensed = {};
     }
 }
 
+/**
+ * @description     validates grid width and height
+ * @param widthAndHeight {string}
+ * @returns {boolean}
+ */
 Grid.prototype.validation = function (widthAndHeight) {
-    let gridDefaults = widthAndHeight.split(' ');
-    if (typeof gridDefaults === 'undefined' || isNaN(Number(gridDefaults[0])) || isNaN(Number(gridDefaults[1]))) {
+    const [gridWidth, gridHeight] = widthAndHeight.split(' ');
+    if (typeof widthAndHeight === 'undefined' || isNaN(Number(gridWidth)) || isNaN(Number(gridHeight))) {
         console.error('set default grid width and height');
         return false;
     } else {
@@ -37,11 +46,17 @@ Grid.prototype.validation = function (widthAndHeight) {
     }
 }
 
+/**
+ * @param robot {object} Robot object
+ */
 Grid.prototype.runItem = function (robot) {
     this.robot = robot;
     this.runItemInstruction();
 }
 
+/**
+ * @description starts running the instruction inside the robot
+ */
 Grid.prototype.runItemInstruction = function() {
     let instructions = this.robot.itemInstruction.split('');
     instructions.forEach(instruction => {
@@ -63,6 +78,10 @@ Grid.prototype.runItemInstruction = function() {
     this.printItemCoordinates();
 }
 
+/**
+ * @description     rotate the robot
+ * @param orientation
+ */
 Grid.prototype.rotateItem = function (orientation) {
     let newOrientation = this.compass.indexOf(this.robot.compassOrientation);
     newOrientation += orientation;
@@ -74,6 +93,9 @@ Grid.prototype.rotateItem = function (orientation) {
     this.robot.compassOrientation = this.compass[newOrientation];
 }
 
+/**
+ * @description movements for the robot
+ */
 Grid.prototype.setItemMovement = function () {
     let movement = {};
     switch(this.robot.compassOrientation) {
@@ -93,21 +115,27 @@ Grid.prototype.setItemMovement = function () {
     this.moveItemForward(movement);
 }
 
+/**
+ * @description     detects if scent is found on a plot
+ * @param instruction {string}
+ * @returns {boolean}
+ */
 Grid.prototype.isNextMovementOnScent = function (instruction) {
     if (this.lastItemScensed.toString() == '[object Object]') {
         return;
     }
     let sentFound = false;
     const scent = this.lastItemScensed.toString();
-    const scentData = scent.split(' ');
-    const scentX = Number(scentData[0]),
-        scentY = Number(scentData[1]),
-        scentOrientation = scentData[2];
+    const [gridPositionX, gridPositionY, itemOrientation] = scent.split(' ');
+    const scentX = Number(gridPositionX),
+        scentY = Number(gridPositionY),
+        scentOrientation = itemOrientation;
 
-    const nextInstruction = instruction.split(' ');
-    const nextX = Number(nextInstruction[0]),
-        nextY = Number(nextInstruction[1]),
-        nextOrientation = nextInstruction[2];
+    const [nextInstructionX, nextInstructionY, nextInstrOrientation] = instruction.split(' ');
+
+    const nextX = Number(nextInstructionX),
+        nextY = Number(nextInstructionY),
+        nextOrientation = nextInstrOrientation;
 
     if (nextOrientation == scentOrientation
         && (nextX > scentX || nextY > scentY || nextX < 0 || nextY < 0)) {
@@ -116,6 +144,10 @@ Grid.prototype.isNextMovementOnScent = function (instruction) {
     return sentFound;
 }
 
+/**
+ *
+ * @param movement
+ */
 Grid.prototype.moveItemForward = function (movement) {
     let newRobotCoordinates = {...this.robot, ...movement};
     const compareNewRobotCoordinates = function () {
@@ -136,11 +168,20 @@ Grid.prototype.moveItemForward = function (movement) {
     }
 }
 
+/**
+ *
+ * @returns {string}
+ */
 Grid.prototype.printItemCoordinates = function () {
     console.log('this.robot coordinates:', this.robot.toString());
     return this.robot.toString();
 }
 
+/**
+ *
+ * @param newRobotCoordinates {object} containts new coordinates x and y of the robot position
+ * @returns {boolean|boolean}
+ */
 Grid.prototype.isWithinGridBounds = function (newRobotCoordinates) {
     return (newRobotCoordinates.x >= this.bound.min.x && newRobotCoordinates.x <= this.bound.max.x)
         && (newRobotCoordinates.y >= this.bound.min.y && newRobotCoordinates.y <= this.bound.max.y);

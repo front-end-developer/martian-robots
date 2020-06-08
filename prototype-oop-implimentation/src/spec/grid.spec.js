@@ -3,7 +3,7 @@ const Robot = require('../robot');
 describe("grid", function () {
     const gridSizeMock = '5 3';
     const instructionMock = 'RFRFRFRF';
-    let grid = new Grid(gridSizeMock);
+    const grid = new Grid(gridSizeMock);
     let iRobot;
     beforeEach(() => {
         iRobot = new Robot('1 1 E');
@@ -19,16 +19,15 @@ describe("grid", function () {
         });
 
         it("should validate grid data with an error", () => {
-            let isValid = grid.validation(gridSizeMock);
+            const isValid = grid.validation(gridSizeMock);
             expect(isValid).toBe(true);
         });
 
         it("should inValidate grid data with an error", () => {
-            let isValid = grid.validation('');
+            const isValid = grid.validation('');
             expect(isValid).toBe(false);
         });
 
-        // runItem
         it("should contain a robot", () => {
             grid.runItem(iRobot);
             expect(grid.robot).toBe(iRobot);
