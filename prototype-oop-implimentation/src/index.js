@@ -2,30 +2,13 @@
  * Mark Webley
  * prototype implimentation | TODO: class implimentation | Typescript Implimentation
  */
+
 // enum
 const Compass = {
-    N: 'NORTH',
-    S: 'SOUTH',
-    E: 'EAST',
-    W: 'WEST'
-};
-
-// orientation
-const Rotation = {
-    N: 0,
-    S: 90,
-    E: 180,
-    W: 360
-};
-
-// each gridPlot may have
-const plot = {
-    point: {
-        x:0,
-        y:0
-    },
-    isOccupiad: false,
-    isScensed: false
+    NORTH: 'N',
+    SOUTH: 'S',
+    EAST: 'E',
+    WEST: 'W'
 };
 
 
@@ -35,13 +18,12 @@ function Robot(defaultCoordinator) {
     // TODO: if typeof defaultCoordinator not == 'string', use ES6 version
     this.validation(defaultCoordinator);
     let robotDefaults = defaultCoordinator.split(' ');
-    this.x = defaultCoordinator[0];
-    this.y = defaultCoordinator[1];
-
+    this.x = Number(robotDefaults[0]);
+    this.y = Number(robotDefaults[1]);
     // rotation
-    this.compassOrientation = defaultCoordinator[2]; // Compass.N;
+    this.compassOrientation = robotDefaults[2]; // Compass.N;
     this.lost = '';
-    // this.direction = ;
+    this.itemInstruction = '';
 }
 
 Robot.prototype.validation = function (defaultCoordinator) {
@@ -49,17 +31,19 @@ Robot.prototype.validation = function (defaultCoordinator) {
     if (robotDefaults.length < 3) {
         throw new Error('missing x y compassDirection');
     }
-    if (isNaN(Number(robotDefaults[0])) || isNaN(Number(robotDefaults[1]))) {
-        throw new Error('set x and y coordinates for Robot')
+    if (isNaN(Number(robotDefaults[0])) || isNaN(Number(robotDefaults[1])) ||
+        isNaN(Number(robotDefaults[0])) > 50 || isNaN(Number(robotDefaults[1])) > 50
+    ) {
+        throw new Error('set x and y coordinates for Robot, max coordinates allowed 50')
     }
-    if (Object.keys(Compass).indexOf(robotDefaults[2]) === -1) {
+    if (Object.values(Compass).indexOf(robotDefaults[2]) === -1) {
         throw new Error(`define compass direction ${Object.keys(Compass)} for Robot`);
     }
 }
 
 Robot.prototype.instruction = function (instruction) {
     this.validationInstruction(instruction);
-    this.instruction = instruction;
+    this.itemInstruction = instruction;
 }
 
 Robot.prototype.validationInstruction = function (instruction) {
@@ -72,26 +56,26 @@ Robot.prototype.validationInstruction = function (instruction) {
 }
 
 Robot.prototype.toString = function() {
-    let robotToString = `3 3 N LOST ${this.x} ${this.y} ${this.compassOrientation} ${this.lost}`;
-    console.log('Robot.toString: ', robotToString);
-    return robotToString;
+    return `${this.x} ${this.y} ${this.compassOrientation} ${this.lost}`;
 }
 
 // export
 // new grid x5 width, y5 height
 function Grid(widthAndHeight) {
     this.validation(widthAndHeight);
+    let gridDefaults = widthAndHeight.split(' ');
     this.items = [];    // list or successful Robots added for convenience
+    this.lostItems = [];    // list or lost Robots added for convenience
     this.compass = [
-        Compass.N,
-        Compass.E,
-        Compass.S,
-        Compass.E
+        Compass.NORTH,
+        Compass.EAST,
+        Compass.SOUTH,
+        Compass.WEST
     ];
 
     this.bound = {
         min: {x: 0, y: 0},
-        max: {x: 2, y: 2} // x: widthAndHeight[0], y: widthAndHeight[1]
+        max: {x: Number(gridDefaults[0]), y: Number(gridDefaults[1])}
     }
     this.lastItemScensed = {};
 }
@@ -109,11 +93,13 @@ Grid.prototype.runItem = function (robot) {
 }
 
 Grid.prototype.runItemInstruction = function() {
-    let test = 'RFRFRFRF';
-    let instructions = test.split('');
+    let instructions = this.robot.itemInstruction.split('');
     instructions.forEach(instruction => {
         // TODO: if first instruction is L or R run:
         // TODO: if instruction is F setItemMovement
+        if (this.robot.lost) {
+            return;
+        }
         switch(instruction) {
             case 'L':
                 this.rotateItem(-1);
@@ -144,34 +130,62 @@ Grid.prototype.rotateItem = function (orientation) {
 Grid.prototype.setItemMovement = function () {
     let movement = {};
     switch(this.robot.compassOrientation) {
-        case Compass.N:
+        case Compass.NORTH:
             movement.y = this.robot.y + 1;
             break;
-        case Compass.E:
+        case Compass.EAST:
             movement.x = this.robot.x + 1;
             break;
-        case Compass.S:
+        case Compass.SOUTH:
             movement.y = this.robot.y - 1;
             break;
-        case Compass.W:
+        case Compass.WEST:
             movement.x = this.robot.x - 1;
             break;
     }
     this.moveItemForward(movement);
 }
 
-Grid.prototype.moveItemForward = function (movement) {
-    let newRobotCoordinates = {...this.robot, movement};
-
-    // TODO: double check to make sure this is done properly
-    if (this.lastItemScensed.toString() === newRobotCoordinates.toString()) {
+Grid.prototype.isNextMovementOnScent = function (instruction) {
+    if (this.lastItemScensed.toString() == '[object Object]') {
         return;
     }
-    if (this.isWithinGridBounds(newRobotCoordinates)) {
+    let sentFound = false;
+    const scent = this.lastItemScensed.toString(); // '3 3 N LOST';
+    const scentData = scent.split(' ');
+    const scentX = Number(scentData[0]),
+        scentY = Number(scentData[1]),
+        scentOrientation = scentData[2];
+
+    const nextInstruction = instruction.split(' '); // '3 4 N'.split(' ');
+    const nextX = Number(nextInstruction[0]),
+        nextY = Number(nextInstruction[1]),
+        nextOrientation = nextInstruction[2];
+
+    if (nextOrientation == scentOrientation
+        && (nextX > scentX || nextY > scentY || nextX < 0 || nextY < 0)) {
+        sentFound = true;
+    }
+    return sentFound;
+}
+
+Grid.prototype.moveItemForward = function (movement) {
+    let newRobotCoordinates = {...this.robot, ...movement};
+    const compareNewRobotCoordinates = function () {
+            return `${newRobotCoordinates.x} ${newRobotCoordinates.y} ${newRobotCoordinates.compassOrientation} ${newRobotCoordinates.lost}`;
+    }
+
+    if (this.isNextMovementOnScent(compareNewRobotCoordinates())) {
+        return;
+    }
+
+    if (this.isWithinGridBounds(newRobotCoordinates)) { // this.robot
+        Object.assign(this.robot, movement);
         this.items.push(this.robot);
     } else {
         this.robot.lost = 'LOST';
         this.lastItemScensed = this.robot;
+        this.lostItems.push(this.robot)
     }
 }
 
@@ -179,61 +193,24 @@ Grid.prototype.printItemCoordinates = function () {
     console.log('this.robot coordinates:', this.robot.toString());
 }
 
-Grid.prototype.isWithinGridBounds = function () {
-    return (this.robot.x >= this.bound.min.x && this.robot.x <= bounds.max.x) && (this.robot.y >= this.bound.min.y && this.robot.y <= bounds.max.y);
+Grid.prototype.isWithinGridBounds = function (newRobotCoordinates) {
+    return (newRobotCoordinates.x >= this.bound.min.x && newRobotCoordinates.x <= this.bound.max.x)
+        && (newRobotCoordinates.y >= this.bound.min.y && newRobotCoordinates.y <= this.bound.max.y);
 }
 
-
-// grid class: contains maxWidth, maxHeight
-
-// grid class: contains method: grid.point(x, y)
-
-// grid class: contains method: grid.moveItem(Robot, Instruction: {})
-
-// grid class: contains method gridValidation() Max Length 50
-
-// grid class: contains method: grid.setScent() // set scent
-
-// grid class: contains method: grid.getScent() // get latest and current scent
-
-// Optional
-// grid class: contains method: grid.getScents(), returns an array of sents
-
-// grid class: contains scents:[]
-
-// que of robots WITH instructions
-// grid class: contains robots:[]
-
-// grid class OR Robot class: contains method: robot.outputJSON() RETURNS {X: d, y: d, compass: N|S|E|W, scent: true|false}
-
-// grid class OR Robot class: contains method: robot.outputString() RETURNS x y, N true
-
-
-
-
-// grid class: contains method:
-
-// new robot, x:1, y:1, orientation: E
-
-// robot class: contains method robotValidation() Max x = 50, Max y = 50
-
-// robot class: contains axis by orientation of degress, 0/360, 90 180, 270
-
-// robot class: contains compass: N, S, E, W perhaps as enums N: 'NORTH', S: 'SOUTH', E: 'EAST', W: 'WEST'
-
-// robot class: contains method instructionValidation() Max Length 100
-
-
-
-// robot class: contains position: x: digit, y: digit
-
-
 // Test
-let mars = new Grid('2 2');
-let iRobot = new Robot('1 1 E');
-iRobot.instruction('RFRFRFRF');
-mars.runItem(iRobot);
+let mars = new Grid('5 3');
+// let iRobot = new Robot('1 1 E');
+// iRobot.instruction('RFRFRFRF');
+// mars.runItem(iRobot);
 
+let i2ndRobot = new Robot('3 2 N');
+i2ndRobot.instruction('FRRFLLFFRRFLL');
+mars.runItem(i2ndRobot);
+
+let i3rdRobot = new Robot('0 3 W');
+i3rdRobot.instruction('LLFFFLFLFL');
+mars.runItem(i3rdRobot);
 
 module.exports = {
     Robot, Grid
