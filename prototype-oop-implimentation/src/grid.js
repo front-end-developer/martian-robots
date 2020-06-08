@@ -7,7 +7,6 @@
 Compass = require('./compass');
 Robot = require('./robot');
 
-// new grid x5 width, y5 height
 function Grid(widthAndHeight) {
     this.validation(widthAndHeight);
     let gridDefaults = widthAndHeight.split(' ');
@@ -42,8 +41,6 @@ Grid.prototype.runItem = function (robot) {
 Grid.prototype.runItemInstruction = function() {
     let instructions = this.robot.itemInstruction.split('');
     instructions.forEach(instruction => {
-        // TODO: if first instruction is L or R run:
-        // TODO: if instruction is F setItemMovement
         if (this.robot.lost) {
             return;
         }
@@ -62,7 +59,6 @@ Grid.prototype.runItemInstruction = function() {
     this.printItemCoordinates();
 }
 
-// RFRFRFRF
 Grid.prototype.rotateItem = function (orientation) {
     let newOrientation = this.compass.indexOf(this.robot.compassOrientation);
     newOrientation += orientation;
@@ -98,13 +94,13 @@ Grid.prototype.isNextMovementOnScent = function (instruction) {
         return;
     }
     let sentFound = false;
-    const scent = this.lastItemScensed.toString(); // '3 3 N LOST';
+    const scent = this.lastItemScensed.toString();
     const scentData = scent.split(' ');
     const scentX = Number(scentData[0]),
         scentY = Number(scentData[1]),
         scentOrientation = scentData[2];
 
-    const nextInstruction = instruction.split(' '); // '3 4 N'.split(' ');
+    const nextInstruction = instruction.split(' ');
     const nextX = Number(nextInstruction[0]),
         nextY = Number(nextInstruction[1]),
         nextOrientation = nextInstruction[2];
@@ -126,7 +122,7 @@ Grid.prototype.moveItemForward = function (movement) {
         return;
     }
 
-    if (this.isWithinGridBounds(newRobotCoordinates)) { // this.robot
+    if (this.isWithinGridBounds(newRobotCoordinates)) {
         Object.assign(this.robot, movement);
         this.items.push(this.robot);
     } else {

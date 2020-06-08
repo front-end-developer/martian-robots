@@ -3,7 +3,6 @@
  *  date:   8/06/2020
  */
 
-// 1 1 E
 function Robot(defaultCoordinator) {
     this.validation(defaultCoordinator);
     let robotDefaults = defaultCoordinator.split(' ');
