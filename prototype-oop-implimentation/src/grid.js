@@ -1,7 +1,7 @@
 /**
  * Mark Webley
  * date:   5/06/2020
- * prototype implementation | TODO: class implementation | Typescript implementation
+ * prototype implementation
  */
 
 Compass = require('./compass');

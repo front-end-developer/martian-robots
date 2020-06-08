@@ -9,7 +9,6 @@ Run:
 - node prototype-oop-implimentation/src
 - run tests with: jasmine-node prototype-oop-implimentation/src
 
-
 _______
 
 # Martian robots
