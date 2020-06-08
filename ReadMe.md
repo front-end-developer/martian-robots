@@ -1,5 +1,10 @@
-##### Martian robots Implimentation
+##### Martian robots Implimentation 
 Different Implimentations by Prototype Mark Webley.
+
+Code for three JS version types: 
+
+prototype version | ES7 classes version | Typescript version
+
 
 To install run:
 - npm i
