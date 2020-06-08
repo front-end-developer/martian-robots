@@ -8,28 +8,32 @@ Compass = require('./compass');
 Robot = require('./robot');
 
 function Grid(widthAndHeight) {
-    this.validation(widthAndHeight);
-    let gridDefaults = widthAndHeight.split(' ');
-    this.items = [];    // list or successful Robots added for convenience
-    this.lostItems = [];    // list or lost Robots added for convenience
-    this.compass = [
-        Compass.NORTH,
-        Compass.EAST,
-        Compass.SOUTH,
-        Compass.WEST
-    ];
+    if (this.validation(widthAndHeight)) {
+        let gridDefaults = widthAndHeight.split(' ');
+        this.items = [];    // list or successful Robots added for convenience
+        this.lostItems = [];    // list or lost Robots added for convenience
+        this.compass = [
+            Compass.NORTH,
+            Compass.EAST,
+            Compass.SOUTH,
+            Compass.WEST
+        ];
 
-    this.bound = {
-        min: {x: 0, y: 0},
-        max: {x: Number(gridDefaults[0]), y: Number(gridDefaults[1])}
+        this.bound = {
+            min: {x: 0, y: 0},
+            max: {x: Number(gridDefaults[0]), y: Number(gridDefaults[1])}
+        }
+        this.lastItemScensed = {};
     }
-    this.lastItemScensed = {};
 }
 
 Grid.prototype.validation = function (widthAndHeight) {
     let gridDefaults = widthAndHeight.split(' ');
     if (typeof gridDefaults === 'undefined' || isNaN(Number(gridDefaults[0])) || isNaN(Number(gridDefaults[1]))) {
-        throw new Error('set default grid width and height');
+        console.error('set default grid width and height');
+        return false;
+    } else {
+        return true;
     }
 }
 

@@ -1,25 +1,14 @@
 ##### Martian robots Implimentation 
-Different Implimentations by Prototype Mark Webley.
-
-Code for three JS version types: 
-
-prototype version | ES7 classes version | Typescript version
-
+By Mark Webley.
 
 To install run:
 - npm i
+- npm i -g jasmine-node
 
-Run prototype Version:
+Run:
 - node prototype-oop-implimentation/src
+- run tests with: jasmine-node prototype-oop-implimentation/src
 
-In progress: Run Es7 class version:
-- node es7-class-implimentation/src
-
-In progress: 
-Run Es7/Typescript version:
-- node typescript-implimentation/src
-
-TODO: unit tests
 
 _______
 
