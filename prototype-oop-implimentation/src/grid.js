@@ -8,14 +8,14 @@ Compass = require('./compass');
 Robot = require('./robot');
 
 /**
- * @param {string}  widthAndHeight      set default width and heights for the grid terrain area
+ * @param       {string}  widthAndHeight, set default width and heights for the grid terrain area
  * @constructor
  */
 function Grid(widthAndHeight) {
     if (this.validation(widthAndHeight)) {
         const [gridWidth, gridHeight] = widthAndHeight.split(' ');
-        this.items = [];        // list or successful Robots added for convenience
-        this.lostItems = [];    // list or lost Robots added for convenience
+        this.items = [];        // list of successful Robots added for convenience
+        this.lostItems = [];    // list of lost Robots added for convenience
         this.compass = [
             Compass.NORTH,
             Compass.EAST,
@@ -33,8 +33,8 @@ function Grid(widthAndHeight) {
 
 /**
  * @description     validates grid width and height
- * @param widthAndHeight {string}
- * @returns {boolean}
+ * @param           widthAndHeight {string}
+ * @returns         {boolean}
  */
 Grid.prototype.validation = function (widthAndHeight) {
     const [gridWidth, gridHeight] = widthAndHeight.split(' ');
@@ -47,7 +47,7 @@ Grid.prototype.validation = function (widthAndHeight) {
 }
 
 /**
- * @param robot {object} Robot object
+ * @param           robot {object} Robot object
  */
 Grid.prototype.runItem = function (robot) {
     this.robot = robot;
@@ -55,7 +55,7 @@ Grid.prototype.runItem = function (robot) {
 }
 
 /**
- * @description starts running the instruction inside the robot
+ * @description       starts running the instruction inside the robot
  */
 Grid.prototype.runItemInstruction = function() {
     let instructions = this.robot.itemInstruction.split('');
@@ -80,7 +80,7 @@ Grid.prototype.runItemInstruction = function() {
 
 /**
  * @description     rotate the robot
- * @param orientation
+ * @param           orientation {number}
  */
 Grid.prototype.rotateItem = function (orientation) {
     let newOrientation = this.compass.indexOf(this.robot.compassOrientation);
@@ -94,7 +94,7 @@ Grid.prototype.rotateItem = function (orientation) {
 }
 
 /**
- * @description movements for the robot
+ * @description      movements for the robot
  */
 Grid.prototype.setItemMovement = function () {
     let movement = {};
@@ -117,8 +117,8 @@ Grid.prototype.setItemMovement = function () {
 
 /**
  * @description     detects if scent is found on a plot
- * @param instruction {string}
- * @returns {boolean}
+ * @param           instruction {string}
+ * @returns         {boolean}
  */
 Grid.prototype.isNextMovementOnScent = function (instruction) {
     if (this.lastItemScensed.toString() == '[object Object]') {
@@ -146,7 +146,7 @@ Grid.prototype.isNextMovementOnScent = function (instruction) {
 
 /**
  *
- * @param movement
+ * @param       movement {object}, contains x, y coordinates for an item on the gried
  */
 Grid.prototype.moveItemForward = function (movement) {
     let newRobotCoordinates = {...this.robot, ...movement};
@@ -170,7 +170,7 @@ Grid.prototype.moveItemForward = function (movement) {
 
 /**
  *
- * @returns {string}
+ * @returns     {string}
  */
 Grid.prototype.printItemCoordinates = function () {
     console.log('this.robot coordinates:', this.robot.toString());
@@ -179,8 +179,8 @@ Grid.prototype.printItemCoordinates = function () {
 
 /**
  *
- * @param newRobotCoordinates {object} containts new coordinates x and y of the robot position
- * @returns {boolean|boolean}
+ * @param       newRobotCoordinates {object}, constraints for new coordinates x and y of the robot position
+ * @returns     {boolean}
  */
 Grid.prototype.isWithinGridBounds = function (newRobotCoordinates) {
     return (newRobotCoordinates.x >= this.bound.min.x && newRobotCoordinates.x <= this.bound.max.x)
